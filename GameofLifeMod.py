@@ -210,14 +210,24 @@ class Cell(pygame.sprite.Sprite):
                     
                 if pygame.mouse.get_pressed()[0] and self.rect.collidepoint(self.game.mpos):
                     self.gen=0
-                    self.age=15
-                    self.quality=80
+                    self.age=self.game.age
+                    if self.age==1:
+                        self.quality=100
+                    elif self.age==15:
+                        self.quality=80
+                    elif self.age==61:
+                        self.quality=60
                     self.alive = True
                     
                 if pygame.mouse.get_pressed()[2] and self.rect.collidepoint(self.game.mpos):
                     self.gen=1
-                    self.age=15
-                    self.quality=80
+                    self.age=self.game.age
+                    if self.age==1:
+                        self.quality=100
+                    elif self.age==15:
+                        self.quality=80
+                    elif self.age==61:
+                        self.quality=60
                     self.alive = True
                     
                 if self.rect.collidepoint(self.game.mpos):
@@ -254,6 +264,7 @@ class Game():
         self.last_tick = pygame.time.get_ticks()
         self.screen_res = [740, 540]
         self.quality=0
+        self.age=15
         self.font = pygame.font.SysFont("Times New Roman", 19)
 
         self.sprites = pygame.sprite.Group()
@@ -315,11 +326,11 @@ class Game():
 
                     
     def blitDirections(self):
-        text = self.font.render("Enter = Next Gen, R-click = Adult Female, L-click = Adult Male, and C to Clear", 1, (255,255,255))
+        text = self.font.render("Enter = Next Gen, R-click = Female, L-click = Male, and R to Reset", 1, (255,255,255))
         generations = self.font.render("Generation: %s" %str(self.generation), 1, (255,255,255))
         pop = self.font.render("Pop: %s" %str(self.population), 1, (255,255,255))
         qual=self.font.render("Quality: %s" %str(self.quality),1,(255,255,255))
-        self.screen.blit(text, (40, 15))
+        self.screen.blit(text, (100, 15))
         self.screen.blit(generations, (10, 500))
         self.screen.blit(pop, (650, 500))
         self.screen.blit(qual,(325,500))
@@ -344,13 +355,20 @@ class Game():
                     self.next=True
                 if event.key == K_SPACE:
                     self.running = False
-                if event.key == K_c:
+                if event.key == K_r:
                     self.running=False
                     self.sprites.empty()
                     self.cells=[]
                     self.createGrid()
                     self.generation=0
                     self.population=0
+                    self.age=15
+                if event.key == K_a:
+                    self.age=15
+                if event.key == K_e:
+                    self.age=61
+                if event.key == K_c:
+                    self.age=1
             '''if event.type == KEYUP:
                 if event.key == K_RETURN:
                     self.running=True
