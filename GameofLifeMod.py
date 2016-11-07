@@ -1,3 +1,4 @@
+#Migration to be seen later
 import pygame
 from pygame.locals import *
 import sys
@@ -29,6 +30,7 @@ class Cell(pygame.sprite.Sprite):
 
         self.a_neighbors = []
         self.d_neighbors = []
+        self.qualitylist=[0,0,0,0,0]
 
         self.n = (num - 74) - 1
         self.e = (num + 1) - 1
@@ -50,7 +52,7 @@ class Cell(pygame.sprite.Sprite):
             self.sw]
 
         self.game.cells.append(self)
-        
+        self.d={}
         
     def getColor(self):
         if (self.age>0) and (self.age<=14):
@@ -128,6 +130,7 @@ class Cell(pygame.sprite.Sprite):
         for i in self.a_neighbors:
             i.quality-=1
         self.unavailable=self.game.generation
+        self.qualitylist=[]
         self.scaleQuality()
 
     def survive(self):
@@ -198,9 +201,9 @@ class Cell(pygame.sprite.Sprite):
         if not self.edge:
             self.a_neighbors = []
             self.d_neighbors = []
-            neighbors = [self.game.cells[cell] for cell in self.cell_list]
+            self.neighbors = [self.game.cells[cell] for cell in self.cell_list]
 
-            for n in neighbors:
+            for n in self.neighbors:
                 if n.alive:
                     self.a_neighbors.append(n)
                 else:
@@ -275,6 +278,7 @@ class Game():
 
         self.running = False
         self.createGrid()
+        self.poplist=[0,0,0,0,0]
      
         while 1:
             self.Loop()
@@ -323,6 +327,36 @@ class Game():
                                     z=True
                     if z==True:
                         cell.born()
+        if (self.population==self.poplist[-2]==self.poplist[-3]==self.poplist[-4]==self.poplist[-5]) and (self.population!=0):
+            count=0
+            while count!=5:
+                a=random.choice(self.cells)
+                if a.alive==False:
+                    count1=0
+                    a.born()
+                    a.age=15
+                    a.quality=80
+                    if len(a.d_neighbors)>=5:
+                        z=random.randint(2,5)
+                    elif len(a.d_neighbors)>2:
+                        z=random.randint(2,len(a.d_neighbors))
+                    elif len(a.d_neighbors)<=2:
+                        z=len(a.d_neighbors)
+                    while count1!=z:
+                        b=random.choice(a.d_neighbors)
+                        b.born()
+                        b.age=15
+                        b.quality=80
+                        count1+=1
+                    count+=1
+        for cell in self.cells:
+            if cell.alive:
+                cell.qualitylist.append(cell.quality)
+                if(cell.quality==cell.qualitylist[-5]==cell.qualitylist[-4]==cell.qualitylist[-3]==cell.qualitylist[-2]==0):
+                    cell.die()
+            else:
+                cell.qualitylist=[0,0,0,0,0]
+                
 
                     
     def blitDirections(self):
@@ -362,6 +396,7 @@ class Game():
                     self.createGrid()
                     self.generation=0
                     self.population=0
+                    self.poplist=[0,0,0,0,0]
                     self.age=15
                 if event.key == K_a:
                     self.age=15
@@ -369,10 +404,6 @@ class Game():
                     self.age=61
                 if event.key == K_c:
                     self.age=1
-            '''if event.type == KEYUP:
-                if event.key == K_RETURN:
-                    self.running=True
-                    self.next=True'''
 
 
 
@@ -382,7 +413,9 @@ class Game():
         self.mpos = pygame.mouse.get_pos()
         self.keys_pressed = pygame.key.get_pressed()
         if self.running and self.next:
-            self.next=False
+            #self.next=False
+            self.poplist.append(self.population)
+            print(self.poplist,self.population)
             #pygame.time.wait(100)
             self.generation +=1
             self.Run()
